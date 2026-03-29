@@ -38,7 +38,7 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterFeatureSink)
 
 
-class MPConfigAlgorithm(QgsProcessingAlgorithm):
+class DataStructureAlgorithm(QgsProcessingAlgorithm):
     """
     This is an example algorithm that takes a vector layer and
     creates a new identical one.
@@ -129,21 +129,21 @@ class MPConfigAlgorithm(QgsProcessingAlgorithm):
         lowercase alphanumeric characters only and no spaces or other
         formatting characters.
         """
-        return 'Create Data Structure'
+        return 'create_data_structure'
 
     def displayName(self):
         """
         Returns the translated algorithm name, which should be used for any
         user-visible display of the algorithm name.
         """
-        return self.tr(self.name())
+        return 'Create Data Structure'
 
     def group(self):
         """
         Returns the name of the group this algorithm belongs to. This string
         should be localised.
         """
-        return self.tr(self.groupId())
+        return 'Data Structure'
 
     def groupId(self):
         """
@@ -153,7 +153,7 @@ class MPConfigAlgorithm(QgsProcessingAlgorithm):
         contain lowercase alphanumeric characters only and no spaces or other
         formatting characters.
         """
-        return 'Data Structure'
+        return 'data_structure'
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)

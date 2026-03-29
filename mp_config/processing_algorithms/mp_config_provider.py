@@ -31,7 +31,9 @@ __copyright__ = '(C) 2026 by Christoph Jung'
 __revision__ = '$Format:%H$'
 
 from qgis.core import QgsProcessingProvider
-from .mp_config_algorithm import MPConfigAlgorithm
+from .export_mp_config_algorithm import ExportMPConfigAlgorithm
+from .import_mp_config_algorithm import ImportMPConfigAlgorithm
+from .data_structure_algorithm import DataStructureAlgorithm
 
 
 class MPConfigProvider(QgsProcessingProvider):
@@ -53,9 +55,9 @@ class MPConfigProvider(QgsProcessingProvider):
         """
         Loads all algorithms belonging to this provider.
         """
-        self.addAlgorithm(MPConfigAlgorithm())
-        # add additional algorithms here
-        # self.addAlgorithm(MyOtherAlgorithm())
+        self.addAlgorithm(ExportMPConfigAlgorithm())
+        self.addAlgorithm(ImportMPConfigAlgorithm())
+        self.addAlgorithm(DataStructureAlgorithm())
 
     def id(self):
         """
@@ -63,7 +65,7 @@ class MPConfigProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'MP Config'
+        return 'mp_config'
 
     def name(self):
         """

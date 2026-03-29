@@ -35,7 +35,7 @@ import sys
 import inspect
 
 from qgis.core import QgsProcessingAlgorithm, QgsApplication
-from .mp_config_provider import MPConfigProvider
+from .processing_algorithms.mp_config_provider import MPConfigProvider
 
 cmd_folder = os.path.split(inspect.getfile(inspect.currentframe()))[0]
 
