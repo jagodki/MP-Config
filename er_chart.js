@@ -1,28 +1,5 @@
-%% Mermaid ER-Diagramm für das Masterportal-Datenbankschema
-
-%% Konfiguration der Diagrammeigenschaften
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffdfd3', 'edgeLabelBackground':'#fff', 'tertiaryColor': '#dcd0ff', 'primaryTextColor': '#000', 'secondaryColor': '#f5f5f5'}}}%%
-
 erDiagram
-    %% Entitäten
-    PORTAL_CONFIG ||--o{ MAP_CONFIG : "hat"
-    PORTAL_CONFIG ||--o{ PORTAL_FOOTER : "hat"
-    PORTAL_CONFIG ||--o{ MAIN_MENU : "hat"
-    PORTAL_CONFIG ||--o{ TREE : "hat"
-    PORTAL_CONFIG ||--o{ MOUSE_HOVER : "hat"
-    
-    MAIN_MENU ||--o{ SEARCH_BAR : "enthält"
-    MAIN_MENU ||--o{ SECTION : "enthält"
-    SEARCH_BAR ||--o{ SEARCH_INTERFACE : "nutzt"
-    
-    SERVICES ||--o{ SERVICE : "enthält"
-    SERVICE ||--o{ DATASET : "referenziert"
-    
-    LAYER_CONF ||--o{ LAYER : "enthält"
-    LAYER ||--o{ DATASET : "referenziert"
-    LAYER ||--o{ STYLE : "nutzt"
-    
-    %% Entitäten-Details
+	%% entities
     PORTAL_CONFIG {
         string id PK
         string title
@@ -69,6 +46,7 @@ erDiagram
     SECTION {
         string id PK
         string type
+		json content
     }
     
     TREE {
@@ -87,6 +65,7 @@ erDiagram
     
     SERVICES {
         string id PK
+        string configFilePath
     }
     
     SERVICE {
@@ -120,6 +99,9 @@ erDiagram
     
     LAYER_CONF {
         string id PK
+        string portalConfigId FK
+        string filePath
+
     }
     
     LAYER {
@@ -134,13 +116,56 @@ erDiagram
         boolean urlIsVisible
     }
     
-    STYLE {
+   	LAYER_STYLE {
         string id PK
+        string configFilePath
         json rules
     }
     
-    %% Beziehungen
-    SERVICE ||--|{ DATASET : "referenziert"
-    LAYER ||--|{ DATASET : "referenziert"
-    LAYER ||--|| STYLE : "nutzt"
-    SEARCH_INTERFACE ||--|| SERVICE : "nutzt"
+    ALERTING {
+        string id PK
+        string fetchBroadcastUrl
+    }
+    
+    PROJECTION {
+        string id PK
+        string code
+        string definition
+    }
+    
+    PORTAL_LANGUAGE {
+        string id PK
+        boolean enabled
+        string fallbackLanguage
+        json languages
+    }
+    
+    PORTAL_LOCALES {
+        string id PK
+        string languageCode
+        json translations
+    }
+	
+    %% relationships
+    PORTAL_CONFIG ||--|| MAP_CONFIG : "has"
+    PORTAL_CONFIG ||--o| PORTAL_FOOTER : "has"
+    PORTAL_CONFIG ||--o| MAIN_MENU : "has"
+    PORTAL_CONFIG ||--o| TREE : "has"
+    PORTAL_CONFIG ||--o{ MOUSE_HOVER : "has"
+    PORTAL_CONFIG ||--|| LAYER_CONF : "has"
+    PORTAL_CONFIG ||--o{ ALERTING : "has"
+    PORTAL_CONFIG ||--o{ PROJECTION : "has"
+    PORTAL_CONFIG ||--|| PORTAL_LANGUAGE : "has"
+    PORTAL_CONFIG ||--|{ PORTAL_LOCALES : "has"
+    PORTAL_CONFIG ||--o{ SERVICES : "has"
+    
+    MAIN_MENU ||--o| SEARCH_BAR : "contains"
+    MAIN_MENU ||--o{ SECTION : "contains"
+    SEARCH_BAR ||--|| SEARCH_INTERFACE : "uses"
+    
+    SERVICES ||--o{ SERVICE : "contains"
+    SERVICE ||--o{ DATASET : "references"
+    
+    LAYER_CONF ||--o{ LAYER : "contains"
+    LAYER ||--o{ DATASET : "references"
+    LAYER ||--o{ LAYER_STYLE : "uses"
