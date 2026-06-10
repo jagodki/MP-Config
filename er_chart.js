@@ -1,7 +1,7 @@
 erDiagram
-	%% entities
+	%% entities start
     PORTAL_CONFIG {
-        string id PK
+        int id PK
         string title
         string logo
         string toolTip
@@ -9,7 +9,7 @@ erDiagram
     }
     
     MAP_CONFIG {
-        string id PK
+        int id PK
         boolean zoom
         json orientation
         json mapView
@@ -17,22 +17,22 @@ erDiagram
     }
     
     PORTAL_FOOTER {
-        string id PK
+        int id PK
         json urls
     }
     
     MAIN_MENU {
-        string id PK
+        int id PK
         boolean expanded
         json title
     }
     
     SEARCH_BAR {
-        string id PK
+        int id PK
     }
     
     SEARCH_INTERFACE {
-        string id PK
+        int id PK
         string type
         string serviceId FK
         int minChars
@@ -44,18 +44,18 @@ erDiagram
     }
     
     SECTION {
-        string id PK
+        int id PK
         string type
 		json content
     }
     
     TREE {
-        string id PK
+        int id PK
         boolean highlightedFeatures
     }
     
     MOUSE_HOVER {
-        string id PK
+        int id PK
         int numFeaturesToShow
         string infoText
         boolean highlightOnHover
@@ -64,12 +64,12 @@ erDiagram
     }
     
     SERVICES {
-        string id PK
+        int id PK
         string configFilePath
     }
     
     SERVICE {
-        string id PK
+        int id PK
         string name
         string url
         string typ
@@ -98,14 +98,14 @@ erDiagram
     }
     
     LAYER_CONF {
-        string id PK
+        int id PK
         string portalConfigId FK
         string filePath
 
     }
     
     LAYER {
-        string id PK
+        int id PK
         string name
         string url
         string typ
@@ -117,34 +117,43 @@ erDiagram
     }
     
    	LAYER_STYLE {
-        string id PK
+        int id PK
         string configFilePath
         json rules
     }
     
     ALERTING {
-        string id PK
+        int id PK
         string fetchBroadcastUrl
     }
     
     PROJECTION {
-        string id PK
+        int id PK
         string code
         string definition
     }
     
     PORTAL_LANGUAGE {
-        string id PK
+        int id PK
         boolean enabled
         string fallbackLanguage
         json languages
     }
     
     PORTAL_LOCALES {
-        string id PK
+        int id PK
         string languageCode
         json translations
     }
+	
+	HISTORY {
+		int id PK
+		string old_values
+		string new_values
+		string timestamp
+	}
+	
+	%% entities end
 	
     %% relationships
     PORTAL_CONFIG ||--|| MAP_CONFIG : "has"
