@@ -36,8 +36,9 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingAlgorithm,
                        QgsProcessingParameterFeatureSource,
                        QgsProcessingParameterFeatureSink,
-                       QgsProcessingParameterProviderConnection)
-
+                       QgsProcessingParameterProviderConnection,
+                       QgsProviderRegistry)
+import re
 
 class DataStructureAlgorithm(QgsProcessingAlgorithm):
     """
@@ -65,13 +66,11 @@ class DataStructureAlgorithm(QgsProcessingAlgorithm):
         with some other properties.
         """
 
-        # We add the input vector features source. It can have any kind of
-        # geometry.
         self.addParameter(
             QgsProcessingParameterProviderConnection(
                 self.CONNECTION,
-                self.tr('Datenbankverbindung'),
-                provider='postgres',  # Standardmäßig PostgreSQL, aber GeoPackage wird auch unterstützt
+                self.tr('Geopackage Connection'),
+                provider='ogr',
                 optional=False
             )
         )
@@ -84,7 +83,15 @@ class DataStructureAlgorithm(QgsProcessingAlgorithm):
         # Retrieve the feature source and sink. The 'dest_id' variable is used
         # to uniquely identify the feature sink, and must be included in the
         # dictionary returned by the processAlgorithm function.
-        # source = self.parameterAsSource(parameters, self.INPUT, context)
+        
+        # extract the connection parameter and get the absolute path of the geopackage file
+        gpkg_connection_name = self.parameterAsString(parameters, self.CONNECTION, context)
+        metadata = QgsProviderRegistry.instance().providerMetadata("ogr")
+        connection = metadata.findConnection(gpkg_connection_name)
+        uri = connection.uri()
+        gpkg_path = re.split(r"\|", uri)[0]
+        print(gpkg_path)
+        
         # (sink, dest_id) = self.parameterAsSink(parameters, self.OUTPUT,
                 # context, source.fields(), source.wkbType(), source.sourceCrs())
 
