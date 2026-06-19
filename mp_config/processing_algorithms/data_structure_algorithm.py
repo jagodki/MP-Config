@@ -38,7 +38,17 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterFeatureSink,
                        QgsProcessingParameterProviderConnection,
                        QgsProviderRegistry)
-import re
+from pathlib import Path
+import os, re
+from qgis.PyQt.QtCore import QVariant
+from qgis.core import (
+    QgsField,
+    QgsFields,
+    QgsVectorFileWriter,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransformContext,
+    QgsWkbTypes
+)
 
 class DataStructureAlgorithm(QgsProcessingAlgorithm):
     """
@@ -90,7 +100,15 @@ class DataStructureAlgorithm(QgsProcessingAlgorithm):
         connection = metadata.findConnection(gpkg_connection_name)
         uri = connection.uri()
         gpkg_path = re.split(r"\|", uri)[0]
-        print(gpkg_path)
+        
+        # get the schema file path
+        schema_file = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'config', 'er_chart.js'))
+
+        
+        schema = self.parse_er_file(schema_file)
+
+        self.create_schema_in_gpkg(gpkg_path, schema)
+        
         
         # (sink, dest_id) = self.parameterAsSink(parameters, self.OUTPUT,
                 # context, source.fields(), source.wkbType(), source.sourceCrs())
@@ -159,3 +177,122 @@ class DataStructureAlgorithm(QgsProcessingAlgorithm):
 
     def createInstance(self):
         return DataStructureAlgorithm()
+    
+    def qvariant_type(self, field_type):
+
+        field_type = field_type.lower()
+
+        mapping = {
+            "string": QVariant.String,
+            "json": QVariant.String,
+            "boolean": QVariant.Bool,
+            "int": QVariant.Int,
+            "integer": QVariant.Int,
+            "float": QVariant.Double,
+            "double": QVariant.Double
+        }
+
+        return mapping.get(field_type, QVariant.String)
+
+    def create_table_in_gpkg(self, gpkg_path, table_name, field_definitions):
+
+        fields = QgsFields()
+
+        for field_name, field_type, is_pk, is_fk in field_definitions:
+
+            fields.append(
+                QgsField(
+                    field_name,
+                    self.qvariant_type(field_type)
+                )
+            )
+
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = "GPKG"
+        options.layerName = table_name
+        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+
+        writer = QgsVectorFileWriter.create(
+            gpkg_path,
+            fields,
+            QgsWkbTypes.NoGeometry,
+            QgsCoordinateReferenceSystem(),
+            QgsCoordinateTransformContext(),
+            options
+        )
+
+        if writer.hasError() != QgsVectorFileWriter.NoError:
+            raise Exception(writer.errorMessage())
+
+        del writer
+    
+    def create_schema_in_gpkg(self, gpkg_path, schema):
+
+        first_table = True
+
+        for table_name, fields in schema.items():
+
+            self.create_table_in_gpkg(
+                gpkg_path,
+                table_name,
+                fields
+            )
+
+            first_table = False
+    
+    def parse_er_file(self, file_path):
+        """
+        Liest die Mermaid-ER-Datei ein.
+
+        Ergebnis:
+        {
+            "PORTAL_CONFIG": [
+                ("id", "int", True, False),
+                ("title", "string", False, False),
+                ...
+            ]
+        }
+        """
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        tables = {}
+
+        table_pattern = r'([A-Z_][A-Z0-9_]*)\s*\{(.*?)\}'
+        matches = re.findall(table_pattern, content, re.DOTALL)
+
+        for table_name, body in matches:
+
+            fields = []
+
+            for line in body.splitlines():
+
+                line = line.strip()
+
+                if not line:
+                    continue
+
+                parts = line.split()
+
+                if len(parts) < 2:
+                    continue
+
+                field_type = parts[0]
+                field_name = parts[1]
+
+                is_pk = "PK" in parts
+                is_fk = "FK" in parts
+
+                fields.append(
+                    (
+                        field_name,
+                        field_type,
+                        is_pk,
+                        is_fk
+                    )
+                )
+
+            tables[table_name] = fields
+
+        return tables
